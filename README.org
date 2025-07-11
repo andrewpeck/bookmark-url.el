@@ -1,0 +1,22 @@
+* ~bookmark-url.el~
+
+This small provides a useful helper function for taking an alist of description + url and creating a Marginalia annotated completing read function which launches ~browse-url~.
+
+A simple example:
+
+#+begin_src elisp
+
+(setq bookmarks-alist
+'(("Google" . "https://google.com")
+  ("Yahoo" . "https://yahoo.com")))
+
+(bookmark-url-setup 'find-search-engines
+                    'bookmarks-alist
+                    :name "Search Engine")
+#+end_src
+
+#+ATTR_ORG: :width 1044px
+#+ATTR_HTML: :style max-width:100%;width:1044px
+[[file:images/example.png]]
+
+There's not much else to it, but I find it very helpful for categorizing and easily accessing bookmarks (e.g. datasheets, etc).
