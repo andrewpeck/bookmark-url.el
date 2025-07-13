@@ -11,7 +11,7 @@ A simple example:
 
 (bookmark-url-setup 'find-search-engines
                      :bookmarks-alist 'bookmarks-alist
-                     :name "Search Engine")
+                     :prompt "Search Engine")
 #+end_src
 
 This creates a function which can be executed with ~M-x find-search-engines~
@@ -28,7 +28,7 @@ Now the bookmarks would be set up with:
 #+begin_src elisp
 (bookmark-url-setup 'find-search-engines
                      :bookmarks-file "~/search-engine-alist.el"
-                     :name "Search Engine")
+                     :prompt "Search Engine")
 #+end_src
 
 Saving to a file offers only the advantage (or disadvantage, as you see fit) of creating
@@ -40,7 +40,7 @@ Alternatively, for storage in files `json` is supported by simply choosing a ~js
 #+begin_src elisp
 (bookmark-url-setup 'find-search-engines
                      :bookmarks-file "~/search-engine-alist.json"
-                     :name "Search Engine")
+                     :prompt "Search Engine")
 #+end_src
 
 The bookmarks file should be, e.g.:

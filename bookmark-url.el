@@ -78,7 +78,7 @@
         (bookmark-url--save-to-file current-alist file)))))
 
 ;;;###autoload
-(cl-defun bookmark-url-setup (search-function &key bookmarks-file bookmarks-alist name)
+(cl-defun bookmark-url-setup (search-function &key bookmarks-file bookmarks-alist prompt)
   "Create a bookmarking function from a BOOKMARKS-ALIST or BOOKMARKS-FILE.
 
 This will create a marginalia annotated completing read SEARCH-FUNCTION.
@@ -92,9 +92,11 @@ The search functions can then be set up with
 
 (bookmark-url-create \\=find-search-engines
                     \\=bookmarks-alist
-                    :name \"Search Engine\")
+                    :prompt \"Search Engine\")
 
-It should now be searchable via `M-x find-search-engines`."
+It should now be searchable via `M-x find-search-engines`.
+
+The optional :prompt argument provides a hint during completing read."
 
   (when (not (or bookmarks-file bookmarks-alist))
     (error "`bookmark-url-create` requires either a :bookmarks-file or :bookmarks-alist argument"))
@@ -107,8 +109,8 @@ It should now be searchable via `M-x find-search-engines`."
         (category (intern (concat (symbol-name search-function) "-category")))
         (alist-name (or bookmarks-alist (intern (concat (symbol-name search-function) "-bookmark-alist")))))
 
-    (unless name
-      (setq name (intern search-function)))
+    (unless prompt
+      (setq prompt (intern search-function)))
 
 
     (when bookmarks-file
@@ -132,11 +134,11 @@ It should now be searchable via `M-x find-search-engines`."
          (when ,bookmarks-file
            (setq ,alist-name (bookmark-url--load-from-file ,bookmarks-file)))
          (let* ((target (completing-read
-                         ,(concat name ":")
+                         ,(concat prompt ":")
                          (mapcar 'car ,alist-name) nil t))
                 (url (cdr (assoc target ,alist-name))))
            (browse-url url)))
-      (concat "Search for " name))
+      (concat "Search for " prompt))
 
     (defalias annotator-function
       `(lambda (cand)
