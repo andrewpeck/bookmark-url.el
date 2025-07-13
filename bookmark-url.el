@@ -60,7 +60,7 @@ It should now be searchable via `M-x find-search-engines`."
          (interactive)
          (let* ((target (completing-read
                          ,(concat name ":")
-                         (alist-keys ,bookmarks-alist) nil t))
+                         (mapcar 'car ,bookmarks-alist) nil t))
                 (url (cdr (assoc target ,bookmarks-alist))))
            (browse-url url)))
       (concat "Search for " name))
