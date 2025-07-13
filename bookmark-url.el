@@ -47,24 +47,26 @@
 
 (defun bookmark-url--save-to-file (alist file)
   "Write ALIST to FILE."
-  (pcase (file-name-extension file)
-    ("el" (with-temp-buffer
-            (goto-char (point-min))
-            (delete-region (point-min) (point-max))
-            (insert "(\n")
-            (dolist (i alist) (pp i (current-buffer)))
-            (insert ")\n")
-            (write-file file)))
-    ("json"
-     (let ((json-encoding-pretty-print t))
-       (if-let ((encoded (json-encode alist)))
-           (with-temp-buffer
-             (goto-char (point-min))
-             (insert encoded)
-             (write-file file)
-             (delete-region (point-min) (point-max)))
-         (error (format "Failed to encode alist for writing to %s" file)))))
-    (_ (error (format "Unrecognized extension on %s file. Must be json or el" file)))))
+
+  (let ((extension (file-name-extension file)))
+
+    (when (not (member extension '("el" "json")))
+      (error "Extension %s not recognized for encoding %s" extension file))
+
+    ;; open buffer, write contents
+    (with-temp-buffer
+      (goto-char (point-min))
+      (delete-region (point-min) (point-max))
+
+      (pcase extension
+        ("el" (progn (insert "(\n")
+                     (dolist (i alist) (pp i (current-buffer)))
+                     (insert ")\n")))
+        ("json" (progn (let ((json-encoding-pretty-print t))
+                         (if-let ((encoded (json-encode alist)))
+                             (insert encoded)
+                           (error (format "Failed to encode alist for writing to %s" file)))))))
+      (write-file file))))
 
 (defun bookmark-url--add-bookmark (file)
   "Add new bookmark to FILE."
