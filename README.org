@@ -10,9 +10,9 @@ A simple example:
 '(("Google" . "https://google.com")
   ("Yahoo" . "https://yahoo.com")))
 
-(bookmark-url-setup 'find-search-engines
-                    'bookmarks-alist
-                    :name "Search Engine")
+(bookmark-url-create 'find-search-engines
+                     'bookmarks-alist
+                     :name "Search Engine")
 #+end_src
 
 #+ATTR_ORG: :width 1044px

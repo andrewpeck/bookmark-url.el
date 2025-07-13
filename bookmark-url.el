@@ -29,8 +29,25 @@
 
 (require 'marginalia)
 
-(defun bookmark-url-setup (search-function bookmarks &key name)
-  ""
+;;;###autoload
+(defun bookmark-url-create (search-function bookmarks-alist &key name)
+  "Create a bookmarking function from a BOOKMARKS-ALIST.
+
+This will create a marginalia annotated completing read SEARCH-FUNCTION.
+
+The BOOKMARKS-ALIST should be of the form (DESCRIPTION . URL):
+
+(setq bookmarks-alist \\=((\"Google\" . \"https://google.com\")
+  (\"Yahoo\" . \"https://yahoo.com\")))
+
+The search functions can then be set up with
+
+(bookmark-url-create \\=find-search-engines
+                     \\=bookmarks-alist
+                     :name \"Search Engine\")
+
+It should now be searchable via `M-x find-search-engines`."
+
 
   (let ((annotator-function (intern (concat (symbol-name search-function) "--annotator")))
         (category (intern (concat (symbol-name search-function) "-category"))))
@@ -43,14 +60,14 @@
          (interactive)
          (let* ((target (completing-read
                          ,(concat name ":")
-                         (alist-keys ,bookmarks) nil t))
-                (url (cdr (assoc target ,bookmarks))))
+                         (alist-keys ,bookmarks-alist) nil t))
+                (url (cdr (assoc target ,bookmarks-alist))))
            (browse-url url)))
       (concat "Search for " name))
 
     (defalias annotator-function
       `(lambda (cand)
-         (marginalia--fields ((cdr (assoc cand ,bookmarks)) :face 'link)))
+         (marginalia--fields ((cdr (assoc cand ,bookmarks-alist)) :face 'link)))
       (format "Marginalia annotator for %s" (symbol-name search-function)))
 
     (add-to-list 'marginalia-annotators `(,category ,annotator-function none))
