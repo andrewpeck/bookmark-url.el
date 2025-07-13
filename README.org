@@ -5,15 +5,35 @@ This small provides a useful helper function for taking an alist of description 
 A simple example:
 
 #+begin_src elisp
-
 (setq bookmarks-alist
 '(("Google" . "https://google.com")
   ("Yahoo" . "https://yahoo.com")))
 
-(bookmark-url-create 'find-search-engines
-                     'bookmarks-alist
+(bookmark-url-setup 'find-search-engines
+                     :bookmarks-alist 'bookmarks-alist
                      :name "Search Engine")
 #+end_src
+
+This creates a function which can be executed with ~M-x find-search-engines~
+
+Alternatively bookmarks may be stored in a separate file. e.g. Add the a list into a standalone file, as shown:
+
+#+begin_src elisp
+(("Google" . "https://google.com")
+ ("Yahoo" . "https://yahoo.com")))
+#+end_src
+
+Now the bookmarks would be set up with:
+
+#+begin_src elisp
+(bookmark-url-setup 'find-search-engines
+                     :bookmarks-file "~/search-engine-alist.el"
+                     :name "Search Engine")
+#+end_src
+
+Saving to a file offers only the advantage (or disadvantage, as you see fit) of creating
+
+This creates a function which can be executed with ~M-x find-search-engines-add-bookmark~ to interactively define a new bookmark and have it automatically saved to the file.
 
 #+ATTR_ORG: :width 1044px
 #+ATTR_HTML: :style max-width:100%;width:1044px

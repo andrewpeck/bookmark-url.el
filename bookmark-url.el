@@ -28,46 +28,99 @@
 ;;; Code:
 
 (require 'marginalia)
+(require 'cl-lib)
+
+(defun bookmark-url--load-from-file (file)
+  "Load bookmark alist from a FILE."
+  (with-current-buffer (find-file-noselect file)
+    (goto-char (point-min))
+    (if-let ((read-value (read (current-buffer))))
+        read-value
+      (error (format "Failed to read from %s" file)))))
+
+(defun bookmark-url--save-to-file (alist file)
+  "Write ALIST to FILE."
+  (with-temp-buffer
+    (goto-char (point-min))
+    (delete-region (point-min) (point-max))
+    (insert "(\n")
+    (dolist (i alist) (pp i (current-buffer)))
+    (insert ")\n")
+    (write-file file)))
+
+(defun bookmark-url--add-bookmark (file)
+  "Add new bookmark to FILE."
+  (let ((url (read-string "URL: "))
+        (description (read-string "Description: ")))
+    (when (and url description)
+      (let ((current-alist (bookmark-url--load-from-file file)))
+        (push (cons description url) current-alist)
+        (bookmark-url--save-to-file current-alist file)))))
 
 ;;;###autoload
-(defun bookmark-url-create (search-function bookmarks-alist &key name)
-  "Create a bookmarking function from a BOOKMARKS-ALIST.
+(cl-defun bookmark-url-setup (search-function &key bookmarks-file bookmarks-alist name)
+  "Create a bookmarking function from a BOOKMARKS-ALIST or BOOKMARKS-FILE.
 
 This will create a marginalia annotated completing read SEARCH-FUNCTION.
 
 The BOOKMARKS-ALIST should be of the form (DESCRIPTION . URL):
 
 (setq bookmarks-alist \\=((\"Google\" . \"https://google.com\")
-  (\"Yahoo\" . \"https://yahoo.com\")))
+(\"Yahoo\" . \"https://yahoo.com\")))
 
 The search functions can then be set up with
 
 (bookmark-url-create \\=find-search-engines
-                     \\=bookmarks-alist
-                     :name \"Search Engine\")
+                    \\=bookmarks-alist
+                    :name \"Search Engine\")
 
 It should now be searchable via `M-x find-search-engines`."
 
+  (when (not (or bookmarks-file bookmarks-alist))
+    (error "`bookmark-url-create` requires either a :bookmarks-file or :bookmarks-alist argument"))
+
+  (when (and bookmarks-file bookmarks-alist)
+    (error "`bookmark-url-create` cannot have both a :bookmarks-file and a :bookmarks-alist argument"))
 
   (let ((annotator-function (intern (concat (symbol-name search-function) "--annotator")))
-        (category (intern (concat (symbol-name search-function) "-category"))))
+        (add-function (intern (concat (symbol-name search-function) "-add-bookmark")))
+        (category (intern (concat (symbol-name search-function) "-category")))
+        (alist-name (or bookmarks-alist (intern (concat (symbol-name search-function) "-bookmark-alist")))))
 
     (unless name
       (setq name (intern search-function)))
 
+
+    (when bookmarks-file
+
+      ;; TODO: add a defvar for alist-name so it has a docstring?
+      ;; (let ((docstr
+      ;;        (format "Bookmarks file for for %s" (symbol-name annotator-function))))
+      ;;   (defvar alist-name nil "Bookmarks file."))
+
+      ;; add a function for adding bookmarks
+      (defalias add-function
+        `(lambda ()
+           (interactive)
+           (bookmark-url--add-bookmark ,bookmarks-file))
+        (format "Add a new bookmark to %s" bookmarks-file)))
+
     (defalias search-function
       `(lambda ()
          (interactive)
+         ;; read alist from file, write into variable so it is cached
+         (when ,bookmarks-file
+           (setq ,alist-name (bookmark-url--load-from-file ,bookmarks-file)))
          (let* ((target (completing-read
                          ,(concat name ":")
-                         (mapcar 'car ,bookmarks-alist) nil t))
-                (url (cdr (assoc target ,bookmarks-alist))))
+                         (mapcar 'car ,alist-name) nil t))
+                (url (cdr (assoc target ,alist-name))))
            (browse-url url)))
       (concat "Search for " name))
 
     (defalias annotator-function
       `(lambda (cand)
-         (marginalia--fields ((cdr (assoc cand ,bookmarks-alist)) :face 'link)))
+         (marginalia--fields ((cdr (assoc cand ,alist-name)) :face 'link)))
       (format "Marginalia annotator for %s" (symbol-name search-function)))
 
     (add-to-list 'marginalia-annotators `(,category ,annotator-function none))
