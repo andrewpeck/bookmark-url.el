@@ -1,4 +1,4 @@
-;;; bookmark-url.el --- -*- lexical-binding: t; -*-
+;; bookmark-url.el --- -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2025 Andrew Peck
 
@@ -29,24 +29,42 @@
 
 (require 'marginalia)
 (require 'cl-lib)
+(require 'json)
 
 (defun bookmark-url--load-from-file (file)
   "Load bookmark alist from a FILE."
-  (with-current-buffer (find-file-noselect file)
-    (goto-char (point-min))
-    (if-let ((read-value (read (current-buffer))))
-        read-value
-      (error (format "Failed to read from %s" file)))))
+
+  (pcase (file-name-extension file)
+    ("el" (with-current-buffer (find-file-noselect file)
+            (goto-char (point-min))
+            (if-let ((read-value (read (current-buffer))))
+                read-value
+              (error (format "Failed to read from %s" file)))))
+    ("json"
+     (let ((json-key-type 'string))
+       (json-read-file file)))
+    (_ (error (format "Unrecognized extension on %s file. Must be json or el" file)))))
 
 (defun bookmark-url--save-to-file (alist file)
   "Write ALIST to FILE."
-  (with-temp-buffer
-    (goto-char (point-min))
-    (delete-region (point-min) (point-max))
-    (insert "(\n")
-    (dolist (i alist) (pp i (current-buffer)))
-    (insert ")\n")
-    (write-file file)))
+  (pcase (file-name-extension file)
+    ("el" (with-temp-buffer
+            (goto-char (point-min))
+            (delete-region (point-min) (point-max))
+            (insert "(\n")
+            (dolist (i alist) (pp i (current-buffer)))
+            (insert ")\n")
+            (write-file file)))
+    ("json"
+     (let ((json-encoding-pretty-print t))
+       (if-let ((encoded (json-encode alist)))
+           (with-temp-buffer
+             (goto-char (point-min))
+             (insert encoded)
+             (write-file file)
+             (delete-region (point-min) (point-max)))
+         (error (format "Failed to encode alist for writing to %s" file)))))
+    (_ (error (format "Unrecognized extension on %s file. Must be json or el" file)))))
 
 (defun bookmark-url--add-bookmark (file)
   "Add new bookmark to FILE."
