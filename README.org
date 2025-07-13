@@ -50,6 +50,27 @@ The bookmarks file should be, e.g.:
  "Yahoo": "https://yahoo.com"}
 #+end_src
 
+The opening function to be called can also be modified (so that this could be used with non-URL bookmarks. e.g. to use ~eww~ rather than browse-url:
+
+#+begin_src elisp
+(bookmark-url-setup 'find-search-engines
+                     :bookmarks-file "~/search-engine-alist.json"
+                     :prompt "Search Engine"
+                     :open-function 'eww)
+#+end_src
+
+Or to generalize you could dispatch to XDG-open to work with external opening of arbitrary file types.
+
+#+begin_src  elisp
+(defun my-bookmark-handler (link)
+  (call-process "xdg-open" nil 0 nil link))
+
+(bookmark-url-setup 'find-search-engines
+                     :bookmarks-file "~/search-engine-alist.json"
+                     :prompt "Search Engine"
+                     :open-function 'my-bookmark-handler)
+#+end_src
+
 #+ATTR_ORG: :width 1044px
 #+ATTR_HTML: :style max-width:100%;width:1044px
 [[file:images/example.png]]

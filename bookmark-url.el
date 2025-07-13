@@ -78,7 +78,7 @@
         (bookmark-url--save-to-file current-alist file)))))
 
 ;;;###autoload
-(cl-defun bookmark-url-setup (search-function &key bookmarks-file bookmarks-alist prompt)
+(cl-defun bookmark-url-setup (search-function &key bookmarks-file bookmarks-alist open-function prompt)
   "Create a bookmarking function from a BOOKMARKS-ALIST or BOOKMARKS-FILE.
 
 This will create a marginalia annotated completing read SEARCH-FUNCTION.
@@ -137,7 +137,7 @@ The optional :prompt argument provides a hint during completing read."
                          ,(concat prompt ":")
                          (mapcar 'car ,alist-name) nil t))
                 (url (cdr (assoc target ,alist-name))))
-           (browse-url url)))
+           (funcall (quote ,(or open-function #'browse-url)) url)))
       (concat "Search for " prompt))
 
     (defalias annotator-function
