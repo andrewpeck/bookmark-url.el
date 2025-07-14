@@ -35,7 +35,7 @@ Saving to a file offers only the advantage (or disadvantage, as you see fit) of 
 
 This creates a function which can be executed with ~M-x find-search-engines-add-bookmark~ to interactively define a new bookmark and have it automatically saved to the file.
 
-Alternatively, for storage in files `json` is supported by simply choosing a ~json~ file as the target ~bookmarks-file~.
+Alternatively, for storage in ~json~ files is supported by simply choosing a ~json~ file as the target ~bookmarks-file~.
 
 #+begin_src elisp
 (bookmark-url-setup 'find-search-engines
