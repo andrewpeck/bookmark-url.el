@@ -134,7 +134,7 @@ The optional :prompt argument provides a hint during completing read."
          (when ,bookmarks-file
            (setq ,alist-name (bookmark-url--load-from-file ,bookmarks-file)))
          (let* ((target (completing-read
-                         ,(concat prompt ":")
+                         ,(concat prompt ": ")
                          (mapcar 'car ,alist-name) nil t))
                 (url (cdr (assoc target ,alist-name))))
            (funcall (quote ,(or open-function #'browse-url)) url)))
