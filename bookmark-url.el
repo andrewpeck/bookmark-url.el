@@ -115,10 +115,9 @@ The optional :prompt argument provides a hint during completing read."
 
     (when bookmarks-file
 
-      ;; TODO: add a defvar for alist-name so it has a docstring?
-      ;; (let ((docstr
-      ;;        (format "Bookmarks file for for %s" (symbol-name annotator-function))))
-      ;;   (defvar alist-name nil "Bookmarks file."))
+      ;; add a defvar for alist-name so it has a docstring?
+      (let ((docstr (format "Bookmarks file for for %s" (symbol-name search-function))))
+        (eval `(defvar ,alist-name nil ,docstr)))
 
       ;; add a function for adding bookmarks
       (defalias add-function
