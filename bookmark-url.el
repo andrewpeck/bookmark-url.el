@@ -32,9 +32,10 @@
 (require 'json)
 
 (defun bookmark-url--write-pretty-json (data file)
-  (let ((json-encoding-pretty-print t))
-    (insert (json-encode data))
-    (write-file file)))
+  (with-temp-buffer
+    (let ((json-encoding-pretty-print t))
+      (insert (json-encode data))
+      (write-file file))))
 
 (defun bookmark-url--load-from-file (file)
   "Load bookmark alist from a FILE."
